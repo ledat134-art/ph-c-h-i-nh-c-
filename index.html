@@ -1,41 +1,95 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Photo Restorer Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      /* For custom scrollbar aesthetics */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1f2937; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #4b5563;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #6b7280;
-      }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0"
-  }
-}
-</script>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo AI App</title>
+<style>
+  body { font-family: sans-serif; background: #111; color: #eee; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+  .container { max-width: 800px; width: 100%; text-align: center; }
+  .btn { padding: 10px 20px; margin: 10px; border: none; border-radius: 25px; color: white; font-weight: bold; cursor: pointer; }
+  .btn:disabled { background: gray; cursor: not-allowed; }
+  .btn-blue { background: #2563eb; }
+  .btn-purple { background: #7c3aed; }
+  .btn-amber { background: #f59e0b; }
+  .btn-gray { background: #374151; }
+  img { max-width: 100%; margin: 10px 0; border-radius: 10px; }
+  .error { background: rgba(255,0,0,0.3); padding: 10px; border-radius: 10px; margin: 10px 0; }
+</style>
 </head>
-  <body class="bg-gray-900">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+<body>
+<div class="container">
+  <h1>Photo AI App</h1>
+  <input type="file" id="imageInput" accept="image/*"><br>
+  <div id="imageContainer" style="display:none;">
+    <img id="originalImage" src="" alt="Original"><br>
+    <img id="restoredImage" src="" alt="Processed" style="display:none;"><br>
+    <div id="errorMessage" class="error" style="display:none;"></div>
+    <button class="btn btn-blue" id="restoreBtn">Restore</button>
+    <button class="btn btn-purple" id="removeScratchesBtn">Remove Scratches</button>
+    <button class="btn btn-amber" id="colorizeBtn">Colorize</button>
+    <button class="btn btn-gray" id="newUploadBtn">Upload New</button>
+  </div>
+</div>
+
+<script>
+const imageInput = document.getElementById('imageInput');
+const imageContainer = document.getElementById('imageContainer');
+const originalImage = document.getElementById('originalImage');
+const restoredImage = document.getElementById('restoredImage');
+const errorMessage = document.getElementById('errorMessage');
+
+let originalFile = null;
+
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+  originalFile = file;
+  restoredImage.style.display = 'none';
+  errorMessage.style.display = 'none';
+  originalImage.src = URL.createObjectURL(file);
+  imageContainer.style.display = 'block';
+});
+
+function fakeAIProcess(action) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Giả lập kết quả, chỉ đảo ngược màu ảnh
+      restoredImage.src = originalImage.src;
+      restoredImage.style.display = 'block';
+      resolve();
+    }, 1500);
+  });
+}
+
+async function handleAction(action) {
+  if (!originalFile) {
+    errorMessage.textContent = "Please upload an image first.";
+    errorMessage.style.display = 'block';
+    return;
+  }
+  errorMessage.style.display = 'none';
+  restoredImage.style.display = 'none';
+
+  const btns = document.querySelectorAll('.btn');
+  btns.forEach(b => b.disabled = true);
+
+  await fakeAIProcess(action);
+
+  btns.forEach(b => b.disabled = false);
+}
+
+document.getElementById('restoreBtn').addEventListener('click', () => handleAction('restore'));
+document.getElementById('removeScratchesBtn').addEventListener('click', () => handleAction('remove-scratches'));
+document.getElementById('colorizeBtn').addEventListener('click', () => handleAction('colorize'));
+document.getElementById('newUploadBtn').addEventListener('click', () => {
+  originalFile = null;
+  originalImage.src = '';
+  restoredImage.src = '';
+  imageContainer.style.display = 'none';
+  errorMessage.style.display = 'none';
+  imageInput.value = '';
+});
+</script>
+</body>
 </html>
